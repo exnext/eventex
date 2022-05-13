@@ -1,0 +1,30 @@
+{
+  "name": "@exnext/eventex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/eventex.js",
+  "types": "dist/eventex.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "devDependencies": {
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.5",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "scripts": {
+    "build": "webpack --mode=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exnext/eventex.git"
+  },
+  "keywords": [],
+  "author": "exnext",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/exnext/eventex/issues"
+  },
+  "homepage": "https://github.com/exnext/eventex#readme"
+}
