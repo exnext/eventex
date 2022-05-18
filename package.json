@@ -1,6 +1,6 @@
 {
   "name": "@exnext/eventex",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/eventex.js",
   "types": "dist/eventex.d.ts",
@@ -20,9 +20,9 @@
     "type": "git",
     "url": "git+https://github.com/exnext/eventex.git"
   },
-  "keywords": [],
+  "keywords": ["eventex", "event"],
   "author": "exnext",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/exnext/eventex/issues"
   },
