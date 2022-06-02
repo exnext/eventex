@@ -1,6 +1,6 @@
 # eventex
 
-An engine of a simple events manager, without any space technology and too much source code. There are a lot of similar on the Internet, but We are going to use it with our projecs, so We will have to keep it in good condition. We have gvaranty, that it will allways work. Wa are able to fix any problem in it.
+An engine of a simple events manager, without any space technology and too much source code. There are a lot of similar on the Internet, but We are going to use it with our projects, so We will have to keep it in a good condition. We have gvaranty, that it will allways work. Wa are able to fix any problem in it.
 
 ## NPM
 
@@ -11,23 +11,23 @@ npm install @exnext/eventex
 ## Methods
 
 ```typescript
-type EventexCallback = (data: any) => any;
+declare type EventexCallback<T = any, K = any> = (data: T) => K;
 
 class Eventex {
     /* Adding a new event to a queue that will be executed after every calling emit method */
-    on(name: string, callback: EventexCallback): void;
+    on<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this;
     
     /* Adding a new event to a queue that will be executed only once after calling emit method */
-    once(name: string, callback: EventexCallback): void;
+    once<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this;
     
     /* Removing event from a queue */
-    off(name: string, callback: EventexCallback): void;
+    off<T = any, K = any>(name: string, callback?: EventexCallback<T, K>): this;
     
     /* Checking if the event exists */
     some(name: string): boolean;
     
     /* Executing events with data */
-    emit(name: string, data: any): Promise<any>;
+    emit<T = any, K = any>(name: string, data?: T): Promise<Awaited<K>[]>;
 }
 ```
 
@@ -43,7 +43,7 @@ or
 import { Eventex } from '@exnext/eventex';
 ```
 
-## Example use 1
+## Example usage 1
 
 ```js
 let eventex = new Eventex();
@@ -55,7 +55,7 @@ eventex.on('demo', (data) => {
 eventex.emit('demo', { name: 'exnext' });
 ```
 
-## Example use 2
+## Example usage 2
 
 ```js
     class MyClass extends Eventex {
@@ -80,7 +80,7 @@ eventex.emit('demo', { name: 'exnext' });
     myClass.doSomething();
 ```
 
-## Example use 3
+## Example usage 3
 
 ```js
     class MyClass extends Eventex {
