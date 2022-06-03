@@ -1,57 +1,110 @@
-type EventexCallback = (data: any) => any;
+interface CallbackControl<T = any> {
+    prevoiusResult?: T;
+    handle: boolean;
+}
 
-interface ItemEvent {
-    name: string;
-    callback: EventexCallback;
+type EventexCallback<T = any, K = any> = (data: T, control?: CallbackControl<K>) => K;
+
+interface ItemEvent<T = any, K = any> {
+    callback: EventexCallback<T, K>;
     once: boolean;
 }
 
+interface DeclaredEvents {
+    [name: string]: ItemEvent[]
+}
+
 export class Eventex {
-    private events: ItemEvent[] = []
+    private events: DeclaredEvents = {};
 
-    emit(name: string, data: any): Promise<any> {
-        let results: Promise<any>[] = [];
-        let toExecute: ItemEvent[] = this.events.filter((event: ItemEvent) => event.name === name && event.callback);
+    private getToExecute(name: string): ItemEvent[] {
+        return (name && this.events[name] || []).filter((event: ItemEvent) => event.callback);
+    }
 
-        toExecute.forEach((event: ItemEvent) => {
+    emit<T = any, K = any>(name: string, data?: T): Promise<Awaited<K>[]> {
+        let results: Promise<K>[] = [];
+        let toExecute: ItemEvent[] = this.getToExecute(name);
+
+        for (let event of toExecute) {
             if (event.once) {
-                this.offEvent(event);
+                this.offEvent(name, event);
             }
 
             results.push(new Promise(resolve => {
                 resolve(event.callback(data));
             }));
-        });
+        }
 
         return Promise.all(results);
     }
 
-    once(name: string, callback: EventexCallback) {
-        this.events.push({ name, callback, once: true });
-    }
+    async emitInSeries<T = any, K = any>(name: string, data?: T): Promise<K[]> {
+        let results: K[] = [];
+        let toExecute: ItemEvent[] = this.getToExecute(name);
 
-    on(name: string, callback: EventexCallback) {
-        this.events.push({ name, callback, once: false });
-    }
-
-    off(name: string, callback: EventexCallback) {
-        let toDelete = this.events.filter((event: ItemEvent) => event.name === name);
-
-        if (callback) {
-            toDelete = toDelete.filter((event: ItemEvent) => event.callback === callback);
+        let control: CallbackControl<K> = {
+            prevoiusResult: undefined,
+            handle: false
         }
 
-        toDelete.forEach((event: ItemEvent) => {
-            this.offEvent(event);
-        });
+        for (let event of toExecute) {
+            if (event.once) {
+                this.offEvent(name, event);
+            }
+
+            results.push(await new Promise(resolve => {
+                resolve(event.callback(data, control));
+            }));
+
+            control.prevoiusResult = results[results.length - 1];
+
+
+
+            if (control.handle) {
+                break;
+            }
+        }
+
+        return results;
+    }
+
+    once<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this {
+        this.events[name] = this.events[name] || [];
+        this.events[name].push({ callback, once: true });
+
+        return this;
+    }
+
+    on<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this {
+        this.events[name] = this.events[name] || [];
+        this.events[name].push({ callback, once: false });
+
+        return this;
+    }
+
+    off<T = any, K = any>(name: string, callback?: EventexCallback<T, K>): this {
+        if (callback) {
+            let events: ItemEvent[] = this.getToExecute(name).filter((event: ItemEvent) => event.callback == callback);
+            events.forEach((event: ItemEvent) => this.offEvent(name, event));
+        } else {
+            delete this.events[name];
+        }
+
+        return this;
     }
 
     some(name: string): boolean {
-        return this.events.some((event: ItemEvent) => event.name === name);
+        return !!this.events[name] && (this.events[name].length > 0);
     }
 
-    private offEvent(event: ItemEvent) {
-        let index: number = this.events.indexOf(event);
-        this.events.splice(index, 1);
+    private offEvent(name: string, event: ItemEvent): void {
+        if (this.events[name]) {
+            let index: number = this.events[name].indexOf(event);
+            this.events[name].splice(index, 1);
+
+            if (!this.events[name].length) {
+                delete this.events[name];
+            }
+        }
     }
 }
