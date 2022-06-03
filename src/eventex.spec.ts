@@ -109,7 +109,8 @@ describe('testing of a simple Eventex class', () => {
         return ++data;
       })
       .emitInSeries('unit-test', 1)
-      .then((result) => {
+      .then((results) => {
+        let result = results[results.length - 1];
         expect(result).toBe(2);
       });
   });
@@ -123,7 +124,8 @@ describe('testing of a simple Eventex class', () => {
         return ++data;
       })
       .emitInSeries('unit-test', 1)
-      .then((result) => {
+      .then((results) => {
+        let result = results[results.length - 1];
         expect(result).toBe(2);
       });
   });
@@ -137,7 +139,8 @@ describe('testing of a simple Eventex class', () => {
         return ++data + control?.prevoiusResult;
       })
       .emitInSeries('unit-test', 1)
-      .then((result) => {
+      .then((results) => {
+        let result = results[results.length - 1];
         expect(result).toBe(4);
       });
   });
@@ -155,7 +158,8 @@ describe('testing of a simple Eventex class', () => {
         return ++data + control?.prevoiusResult;
       })
       .emitInSeries('unit-test', 1)
-      .then((result) => {
+      .then((results) => {
+        let result = results[results.length - 1];
         expect(result).toBe(2);
       });
   });

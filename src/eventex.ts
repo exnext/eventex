@@ -38,7 +38,8 @@ export class Eventex {
         return Promise.all(results);
     }
 
-    async emitInSeries<T = any, K = any>(name: string, data?: T): Promise<K | undefined> {
+    async emitInSeries<T = any, K = any>(name: string, data?: T): Promise<K[]> {
+        let results: K[] = [];
         let toExecute: ItemEvent[] = this.getToExecute(name);
 
         let control: CallbackControl<K> = {
@@ -51,16 +52,20 @@ export class Eventex {
                 this.offEvent(name, event);
             }
 
-            control.prevoiusResult = await new Promise(resolve => {
+            results.push(await new Promise(resolve => {
                 resolve(event.callback(data, control));
-            });
+            }));
+
+            control.prevoiusResult = results[results.length - 1];
+
+
 
             if (control.handle) {
                 break;
             }
         }
 
-        return control.prevoiusResult;
+        return results;
     }
 
     once<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this {
