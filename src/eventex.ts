@@ -1,4 +1,9 @@
-type EventexCallback<T = any, K = any> = (data: T) => K;
+interface CallbackControl<T = any> {
+    prevoiusResult?: T;
+    handle: boolean;
+}
+
+type EventexCallback<T = any, K = any> = (data: T, control?: CallbackControl<K>) => K;
 
 interface ItemEvent<T = any, K = any> {
     callback: EventexCallback<T, K>;
@@ -12,11 +17,15 @@ interface DeclaredEvents {
 export class Eventex {
     private events: DeclaredEvents = {};
 
+    private getToExecute(name: string): ItemEvent[] {
+        return (name && this.events[name] || []).filter((event: ItemEvent) => event.callback);
+    }
+
     emit<T = any, K = any>(name: string, data?: T): Promise<Awaited<K>[]> {
         let results: Promise<K>[] = [];
-        let toExecute: ItemEvent[] = (this.events[name] || []).filter((event: ItemEvent) => event.callback);
+        let toExecute: ItemEvent[] = this.getToExecute(name);
 
-        toExecute.forEach((event: ItemEvent) => {
+        for (let event of toExecute) {
             if (event.once) {
                 this.offEvent(name, event);
             }
@@ -24,9 +33,34 @@ export class Eventex {
             results.push(new Promise(resolve => {
                 resolve(event.callback(data));
             }));
-        });
+        }
 
         return Promise.all(results);
+    }
+
+    async emitInSeries<T = any, K = any>(name: string, data?: T): Promise<K | undefined> {
+        let toExecute: ItemEvent[] = this.getToExecute(name);
+
+        let control: CallbackControl<K> = {
+            prevoiusResult: undefined,
+            handle: false
+        }
+
+        for (let event of toExecute) {
+            if (event.once) {
+                this.offEvent(name, event);
+            }
+
+            control.prevoiusResult = await new Promise(resolve => {
+                resolve(event.callback(data, control));
+            });
+
+            if (control.handle) {
+                break;
+            }
+        }
+
+        return control.prevoiusResult;
     }
 
     once<T = any, K = any>(name: string, callback: EventexCallback<T, K>): this {
@@ -45,7 +79,7 @@ export class Eventex {
 
     off<T = any, K = any>(name: string, callback?: EventexCallback<T, K>): this {
         if (callback) {
-            let events: ItemEvent[] = (this.events[name] || []).filter((event: ItemEvent) => event.callback == callback);
+            let events: ItemEvent[] = this.getToExecute(name).filter((event: ItemEvent) => event.callback == callback);
             events.forEach((event: ItemEvent) => this.offEvent(name, event));
         } else {
             delete this.events[name];

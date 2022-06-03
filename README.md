@@ -1,6 +1,6 @@
 # eventex
 
-An engine of a simple events manager, without any space technology and too much source code. There are a lot of similar on the Internet, but We are going to use it with our projects, so We will have to keep it in a good condition. We have gvaranty, that it will allways work. Wa are able to fix any problem in it.
+The engine of a simple events manager, without any space technology and too much source code. There are a lot of similar on the Internet, but We are going to use it with our projects, so We will have to keep it in a good condition. We have gvaranty, that it will allways work. Wa are able to fix any problem in it.
 
 ## NPM
 
